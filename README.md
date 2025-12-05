@@ -1,5 +1,8 @@
 # Software Entropy
 
+[![CI](https://github.com/KyPython/software-entropy/actions/workflows/ci.yml/badge.svg)](https://github.com/KyPython/software-entropy/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/KyPython/software-entropy/actions/workflows/codeql.yml/badge.svg)](https://github.com/KyPython/software-entropy/actions/workflows/codeql.yml)
+
 A code-smell detection CLI tool that scans code repositories for common issues like long functions, large files, and TODO/FIXME density.
 
 ## Features
