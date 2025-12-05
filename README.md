@@ -15,7 +15,35 @@ A code-smell detection CLI tool that scans code repositories for common issues l
 
 ## Installation
 
+### Global Installation (Recommended)
+
+Install globally to use `software-entropy` from anywhere:
+
 ```bash
+npm install -g software-entropy
+```
+
+### Local Installation
+
+Install as a dev dependency in your project:
+
+```bash
+npm install --save-dev software-entropy
+```
+
+Then use it with `npx`:
+
+```bash
+npx software-entropy <directory>
+```
+
+### Development Setup
+
+To contribute or run from source:
+
+```bash
+git clone https://github.com/KyPython/software-entropy.git
+cd software-entropy
 npm install
 npm run build
 ```
@@ -24,8 +52,16 @@ npm run build
 
 ### Basic Usage
 
+After global installation:
+
 ```bash
-npm start -- <directory>
+software-entropy <directory>
+```
+
+Or with npx (if installed locally):
+
+```bash
+npx software-entropy <directory>
 ```
 
 ### Options
@@ -43,19 +79,19 @@ npm start -- <directory>
 
 ```bash
 # Scan current directory
-npm start -- .
+software-entropy .
 
 # Scan with custom thresholds
-npm start -- ./src --max-function-lines 30 --max-file-lines 300
+software-entropy ./src --max-function-lines 30 --max-file-lines 300
 
 # Output JSON report
-npm start -- ./src -o report.json
+software-entropy ./src -o report.json
 
 # JSON only output
-npm start -- ./src --json
+software-entropy ./src --json
 
 # Custom include/exclude patterns
-npm start -- . --include "**/*.{ts,tsx}" --exclude "**/node_modules/**,**/dist/**"
+software-entropy . --include "**/*.{ts,tsx}" --exclude "**/node_modules/**,**/dist/**"
 ```
 
 ## Rules

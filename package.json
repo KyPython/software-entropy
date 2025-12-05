@@ -4,7 +4,7 @@
   "description": "A code-smell detection CLI tool that scans repositories for common issues",
   "main": "dist/cli.js",
   "bin": {
-    "software-entropy": "./dist/cli.js"
+    "software-entropy": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
@@ -18,10 +18,26 @@
     "code-smell",
     "static-analysis",
     "code-quality",
-    "cli"
+    "cli",
+    "linter",
+    "code-analysis",
+    "technical-debt"
   ],
-  "author": "",
+  "author": "KyPython",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KyPython/software-entropy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/KyPython/software-entropy/issues"
+  },
+  "homepage": "https://github.com/KyPython/software-entropy#readme",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "commander": "^11.1.0",
     "chalk": "^4.1.2",
