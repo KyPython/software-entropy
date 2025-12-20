@@ -23,9 +23,9 @@ export class Scanner {
     };
   }
 
-  async scan(directory: string): Promise<ScanResult[]> {
+  async scan(directory: string, specificFiles?: string[]): Promise<ScanResult[]> {
     const results: ScanResult[] = [];
-    const files = await this.findFiles(directory);
+    const files = specificFiles || await this.findFiles(directory);
 
     for (const file of files) {
       try {

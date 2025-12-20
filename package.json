@@ -12,7 +12,12 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "quality:check": "software-entropy .",
+    "quality:check:incremental": "software-entropy . --incremental",
+    "quality:check:ci": "software-entropy . --ci",
+    "quality:baseline": "software-entropy . --save-baseline .code-quality-baseline.json",
+    "quality:compare": "software-entropy . --baseline .code-quality-baseline.json"
   },
   "keywords": [
     "code-smell",

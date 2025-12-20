@@ -35,6 +35,12 @@ jobs:
     - name: Run tests with coverage
       run: npm run test:coverage
 
+    - name: Code Quality Check
+      run: |
+        npm install -g software-entropy
+        software-entropy . --ci --fail-on-high || true
+      continue-on-error: true
+
   security:
     runs-on: ubuntu-latest
     steps:

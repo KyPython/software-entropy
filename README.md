@@ -12,6 +12,11 @@ A code-smell detection CLI tool that scans code repositories for common issues l
 - 🎯 **Common Code Smells**: Detects long functions, large files, TODO/FIXME density
 - 🧪 **Well Tested**: Comprehensive Jest test suite
 - ⚡ **Fast**: Efficient scanning with configurable file patterns
+- ⚙️ **Config File Support**: Project-specific configuration via `.code-quality-config.json`
+- 🔄 **Incremental Scanning**: Only scan changed files for faster feedback
+- 📈 **Baseline Comparison**: Compare against previous scans to track improvements
+- 🤖 **CI/CD Integration**: GitHub Actions annotations and proper exit codes
+- 📉 **Trend Analysis**: Track code quality over time
 
 ## Installation
 
@@ -55,25 +60,161 @@ npm run build
 After global installation:
 
 ```bash
-software-entropy <directory>
+software-entropy [directory]
 ```
 
 Or with npx (if installed locally):
 
 ```bash
-npx software-entropy <directory>
+npx software-entropy [directory]
 ```
+
+If no directory is specified, it defaults to the current directory (`.`).
+
+### Configuration File
+
+Create a `.code-quality-config.json` file in your project root:
+
+```json
+{
+  "rules": {
+    "long-function": {
+      "enabled": true,
+      "maxLines": 50
+    },
+    "large-file": {
+      "enabled": true,
+      "maxLines": 500
+    },
+    "todo-fixme-density": {
+      "enabled": true,
+      "maxDensity": 5
+    }
+  },
+  "include": ["**/*.{js,ts,jsx,tsx}"],
+  "exclude": ["**/node_modules/**", "**/dist/**"],
+  "ci": {
+    "annotations": true,
+    "failOnHigh": true,
+    "failOnMedium": false
+  }
+}
+```
+
+Use the config file:
+
+```bash
+software-entropy --config .code-quality-config.json
+```
+
+### Incremental Scanning
+
+Only scan files that have changed (requires git):
+
+```bash
+software-entropy . --incremental
+software-entropy . --incremental --base-ref origin/main
+```
+
+### Baseline Comparison
+
+Create a baseline:
+
+```bash
+software-entropy . --save-baseline .code-quality-baseline.json
+```
+
+Compare against baseline:
+
+```bash
+software-entropy . --baseline .code-quality-baseline.json
+```
+
+### CI/CD Integration
+
+Enable CI mode for GitHub Actions:
+
+```bash
+software-entropy . --ci
+```
+
+This will:
+- Output GitHub Actions annotations
+- Use proper exit codes based on severity
+- Provide minimal console output
+
+### CI/CD Integration
+
+#### GitHub Actions
+
+Add to your workflow:
+
+```yaml
+- name: Code Quality Check
+  run: |
+    npm install -g software-entropy
+    software-entropy . --ci --fail-on-high
+```
+
+Or use the npm script:
+
+```yaml
+- name: Code Quality Check
+  run: npm run quality:check:ci
+```
+
+The `--ci` flag enables:
+- GitHub Actions annotations (visible in PR checks)
+- Proper exit codes based on severity
+- Minimal console output
+
+#### Exit Codes
+
+- `0`: No issues or only low severity issues (if `--fail-on-high` is set)
+- `1`: High severity issues found (or medium if `--fail-on-medium` is set)
 
 ### Options
 
+- `-c, --config <file>`: Path to config file
 - `-o, --output <file>`: Output JSON report to file
 - `--json`: Output only JSON (no pretty report)
 - `--no-pretty`: Disable pretty console output
-- `--max-function-lines <number>`: Maximum lines per function (default: 50)
-- `--max-file-lines <number>`: Maximum lines per file (default: 500)
-- `--max-todo-density <number>`: Maximum TODO/FIXME density per 100 lines (default: 5)
+- `--max-function-lines <number>`: Maximum lines per function
+- `--max-file-lines <number>`: Maximum lines per file
+- `--max-todo-density <number>`: Maximum TODO/FIXME density per 100 lines
 - `--include <patterns>`: Comma-separated glob patterns to include
 - `--exclude <patterns>`: Comma-separated glob patterns to exclude
+- `--incremental`: Only scan changed files (requires git)
+- `--base-ref <ref>`: Git reference for incremental scanning (default: HEAD)
+- `--baseline <file>`: Path to baseline report for comparison
+- `--save-baseline <file>`: Save current report as baseline
+- `--ci`: Enable CI mode (annotations, proper exit codes)
+- `--fail-on-high`: Exit with error code if high severity smells found
+- `--fail-on-medium`: Exit with error code if medium severity smells found
+
+### NPM Scripts
+
+Add these to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "quality:check": "software-entropy .",
+    "quality:check:incremental": "software-entropy . --incremental",
+    "quality:check:ci": "software-entropy . --ci",
+    "quality:baseline": "software-entropy . --save-baseline .code-quality-baseline.json",
+    "quality:compare": "software-entropy . --baseline .code-quality-baseline.json"
+  }
+}
+```
+
+Then run:
+
+```bash
+npm run quality:check
+npm run quality:check:incremental
+npm run quality:check:ci
+```
 
 ### Examples
 
@@ -92,6 +233,15 @@ software-entropy ./src --json
 
 # Custom include/exclude patterns
 software-entropy . --include "**/*.{ts,tsx}" --exclude "**/node_modules/**,**/dist/**"
+
+# Incremental scan (only changed files)
+software-entropy . --incremental
+
+# CI mode with GitHub Actions annotations
+software-entropy . --ci --fail-on-high
+
+# Compare with baseline
+software-entropy . --baseline .code-quality-baseline.json
 ```
 
 ## Rules
@@ -156,6 +306,27 @@ import { MyCustomRule } from './rules/MyCustomRule';
 
 const rules = [new MyCustomRule()];
 const scanner = new Scanner(rules);
+```
+
+## Helper Scripts
+
+The project includes helper scripts for common workflows:
+
+```bash
+# Full quality check
+./scripts/quality-check.sh [directory] [config-file]
+
+# Incremental check (changed files only)
+./scripts/quality-check-incremental.sh [base-ref] [config-file]
+
+# Create baseline
+./scripts/quality-baseline.sh [baseline-file] [config-file]
+```
+
+Make scripts executable:
+
+```bash
+chmod +x scripts/*.sh
 ```
 
 ## Development

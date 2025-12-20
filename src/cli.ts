@@ -6,6 +6,10 @@ import { createDefaultRules } from './rules';
 import { generateReport } from './report';
 import { JsonReporter } from './reporters/JsonReporter';
 import { PrettyReporter } from './reporters/PrettyReporter';
+import { loadConfig } from './config';
+import { loadBaseline, saveBaseline, compareWithBaseline } from './baseline';
+import { getChangedFiles, filterFilesByChanges } from './incremental';
+import { generateCIAnnotations, outputGitHubAnnotations, shouldFailBuild } from './ci-annotations';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -15,17 +19,29 @@ program
   .name('software-entropy')
   .description('A code-smell detection CLI tool')
   .version('1.0.0')
-  .argument('<directory>', 'Directory to scan')
+  .argument('[directory]', 'Directory to scan (default: current directory)', '.')
+  .option('-c, --config <file>', 'Path to config file')
   .option('-o, --output <file>', 'Output JSON report to file')
   .option('--json', 'Output only JSON (no pretty report)')
   .option('--no-pretty', 'Disable pretty console output')
-  .option('--max-function-lines <number>', 'Maximum lines per function', '50')
-  .option('--max-file-lines <number>', 'Maximum lines per file', '500')
-  .option('--max-todo-density <number>', 'Maximum TODO/FIXME density per 100 lines', '5')
-  .option('--include <patterns>', 'Comma-separated glob patterns to include', '**/*.{js,ts,jsx,tsx,py,java,cpp,c,cc,h,hpp}')
-  .option('--exclude <patterns>', 'Comma-separated glob patterns to exclude', '**/node_modules/**,**/dist/**,**/build/**,**/.git/**')
+  .option('--max-function-lines <number>', 'Maximum lines per function')
+  .option('--max-file-lines <number>', 'Maximum lines per file')
+  .option('--max-todo-density <number>', 'Maximum TODO/FIXME density per 100 lines')
+  .option('--include <patterns>', 'Comma-separated glob patterns to include')
+  .option('--exclude <patterns>', 'Comma-separated glob patterns to exclude')
+  .option('--incremental', 'Only scan changed files (requires git)')
+  .option('--base-ref <ref>', 'Git reference for incremental scanning (default: HEAD)', 'HEAD')
+  .option('--baseline <file>', 'Path to baseline report for comparison')
+  .option('--save-baseline <file>', 'Save current report as baseline')
+  .option('--ci', 'Enable CI mode (annotations, proper exit codes)')
+  .option('--fail-on-high', 'Exit with error code if high severity smells found')
+  .option('--fail-on-medium', 'Exit with error code if medium severity smells found')
   .action(async (directory: string, options) => {
     try {
+      // Load config
+      const config = loadConfig(options.config);
+      const isCI = options.ci || process.env.CI === 'true';
+
       const targetDir = path.resolve(directory);
       
       if (!fs.existsSync(targetDir)) {
@@ -38,25 +54,64 @@ program
         process.exit(1);
       }
 
-      // Create rules with custom thresholds
+      // Create rules with config or CLI overrides
       const rules = createDefaultRules();
+      
+      // Apply config to rules
       const longFunctionRule = rules.find(r => r.name === 'long-function');
       const largeFileRule = rules.find(r => r.name === 'large-file');
       const todoRule = rules.find(r => r.name === 'todo-fixme-density');
 
-      if (longFunctionRule && 'maxLines' in longFunctionRule) {
-        (longFunctionRule as any).maxLines = parseInt(options.maxFunctionLines, 10);
+      if (longFunctionRule) {
+        const ruleConfig = config.rules?.['long-function'];
+        if (ruleConfig) {
+          longFunctionRule.enabled = ruleConfig.enabled ?? true;
+          if ('maxLines' in longFunctionRule && ruleConfig.maxLines !== undefined) {
+            (longFunctionRule as any).maxLines = ruleConfig.maxLines;
+          }
+        }
+        // CLI override
+        if (options.maxFunctionLines) {
+          (longFunctionRule as any).maxLines = parseInt(options.maxFunctionLines, 10);
+        }
       }
-      if (largeFileRule && 'maxLines' in largeFileRule) {
-        (largeFileRule as any).maxLines = parseInt(options.maxFileLines, 10);
+
+      if (largeFileRule) {
+        const ruleConfig = config.rules?.['large-file'];
+        if (ruleConfig) {
+          largeFileRule.enabled = ruleConfig.enabled ?? true;
+          if ('maxLines' in largeFileRule && ruleConfig.maxLines !== undefined) {
+            (largeFileRule as any).maxLines = ruleConfig.maxLines;
+          }
+        }
+        // CLI override
+        if (options.maxFileLines) {
+          (largeFileRule as any).maxLines = parseInt(options.maxFileLines, 10);
+        }
       }
-      if (todoRule && 'maxDensity' in todoRule) {
-        (todoRule as any).maxDensity = parseFloat(options.maxTodoDensity);
+
+      if (todoRule) {
+        const ruleConfig = config.rules?.['todo-fixme-density'];
+        if (ruleConfig) {
+          todoRule.enabled = ruleConfig.enabled ?? true;
+          if ('maxDensity' in todoRule && ruleConfig.maxDensity !== undefined) {
+            (todoRule as any).maxDensity = ruleConfig.maxDensity;
+          }
+        }
+        // CLI override
+        if (options.maxTodoDensity) {
+          (todoRule as any).maxDensity = parseFloat(options.maxTodoDensity);
+        }
       }
 
       // Parse include/exclude patterns
-      const includePatterns = options.include.split(',').map((p: string) => p.trim());
-      const excludePatterns = options.exclude.split(',').map((p: string) => p.trim());
+      const includePatterns = options.include
+        ? options.include.split(',').map((p: string) => p.trim())
+        : config.include || ['**/*.{js,ts,jsx,tsx,py,java,cpp,c,cc,h,hpp}'];
+      
+      const excludePatterns = options.exclude
+        ? options.exclude.split(',').map((p: string) => p.trim())
+        : config.exclude || ['**/node_modules/**', '**/dist/**', '**/build/**', '**/.git/**'];
 
       // Create scanner
       const scanner = new Scanner(rules, {
@@ -64,28 +119,107 @@ program
         excludePatterns
       });
 
+      // Determine files to scan
+      let filesToScan: string[] | undefined;
+      if (options.incremental) {
+        const changedFiles = getChangedFiles(options.baseRef);
+        console.log(`Incremental scan: ${changedFiles.added.length + changedFiles.modified.length} changed files`);
+        // We'll filter after finding all files
+        filesToScan = undefined; // Will be filtered later
+      }
+
       console.log(`Scanning ${targetDir}...`);
-      const results = await scanner.scan(targetDir);
+      const allFiles = await scanner.scan(targetDir);
+      
+      // Filter for incremental if needed
+      let results = allFiles;
+      if (options.incremental) {
+        const changedFiles = getChangedFiles(options.baseRef);
+        const changedFileList = [...changedFiles.added, ...changedFiles.modified];
+        results = allFiles.filter(result => {
+          const relativePath = path.relative(targetDir, result.file);
+          return changedFileList.some(changed => 
+            result.file.includes(changed) || relativePath === changed
+          );
+        });
+        console.log(`Scanned ${results.length} changed files (out of ${allFiles.length} total)`);
+      }
+
       const report = generateReport(results);
+
+      // Load and compare with baseline if provided
+      let baselineComparison = null;
+      if (options.baseline) {
+        const baseline = loadBaseline(options.baseline);
+        if (baseline) {
+          baselineComparison = compareWithBaseline(report, baseline);
+          console.log('\n📊 Baseline Comparison:');
+          console.log(`  Total Smells: ${baselineComparison.changes.totalSmells > 0 ? '+' : ''}${baselineComparison.changes.totalSmells}`);
+          console.log(`  New Smells: ${baselineComparison.changes.newSmells}`);
+          console.log(`  Fixed Smells: ${baselineComparison.changes.fixedSmells}`);
+          if (baselineComparison.changes.improvedFiles.length > 0) {
+            console.log(`  Improved Files: ${baselineComparison.changes.improvedFiles.length}`);
+          }
+          if (baselineComparison.changes.regressedFiles.length > 0) {
+            console.log(`  Regressed Files: ${baselineComparison.changes.regressedFiles.length}`);
+          }
+        }
+      }
+
+      // Save baseline if requested
+      if (options.saveBaseline) {
+        saveBaseline(report, options.saveBaseline);
+        console.log(`Baseline saved to ${options.saveBaseline}`);
+      }
 
       // Output JSON if requested
       if (options.output) {
         const jsonReporter = new JsonReporter();
-        jsonReporter.writeToFile(report, path.resolve(options.output));
-        console.log(`JSON report written to ${options.output}`);
+        const reportToSave = baselineComparison
+          ? { ...report, baselineComparison }
+          : report;
+        jsonReporter.writeToFile(reportToSave, path.resolve(options.output));
+        if (!isCI) {
+          console.log(`JSON report written to ${options.output}`);
+        }
+      }
+
+      // Generate CI annotations
+      if (isCI && config.ci?.annotations !== false) {
+        const annotations = generateCIAnnotations(report);
+        outputGitHubAnnotations(annotations);
       }
 
       // Output pretty report unless disabled
-      if (!options.json && options.pretty !== false) {
+      if (!options.json && options.pretty !== false && !isCI) {
         const prettyReporter = new PrettyReporter();
         console.log(prettyReporter.generate(report));
       } else if (options.json) {
         const jsonReporter = new JsonReporter();
-        console.log(jsonReporter.generate(report));
+        const reportToOutput = baselineComparison
+          ? { ...report, baselineComparison }
+          : report;
+        console.log(jsonReporter.generate(reportToOutput));
+      } else if (isCI) {
+        // Minimal output in CI
+        console.log(`Scanned ${report.totalFiles} files, found ${report.totalSmells} code smells`);
+        if (report.totalSmells > 0) {
+          console.log(`  High: ${report.summary.bySeverity.high || 0}`);
+          console.log(`  Medium: ${report.summary.bySeverity.medium || 0}`);
+          console.log(`  Low: ${report.summary.bySeverity.low || 0}`);
+        }
       }
 
-      // Exit with error code if smells found
-      if (report.totalSmells > 0) {
+      // Determine exit code
+      const failOnHigh = options.failOnHigh ?? config.ci?.failOnHigh ?? true;
+      const failOnMedium = options.failOnMedium ?? config.ci?.failOnMedium ?? false;
+
+      if (shouldFailBuild(report, failOnHigh, failOnMedium)) {
+        process.exit(1);
+      }
+
+      // Exit with error code if smells found (unless CI mode handles it)
+      if (report.totalSmells > 0 && !isCI) {
         process.exit(1);
       }
     } catch (error) {
@@ -95,4 +229,3 @@ program
   });
 
 program.parse();
-

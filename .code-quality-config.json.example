@@ -1,0 +1,40 @@
+{
+  "rules": {
+    "long-function": {
+      "enabled": true,
+      "maxLines": 50
+    },
+    "large-file": {
+      "enabled": true,
+      "maxLines": 500
+    },
+    "todo-fixme-density": {
+      "enabled": true,
+      "maxDensity": 5
+    }
+  },
+  "include": [
+    "**/*.{js,ts,jsx,tsx,py,java,cpp,c,cc,h,hpp}"
+  ],
+  "exclude": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.git/**"
+  ],
+  "baseline": {
+    "enabled": true,
+    "file": ".code-quality-baseline.json"
+  },
+  "ci": {
+    "annotations": true,
+    "failOnHigh": true,
+    "failOnMedium": false
+  },
+  "metrics": {
+    "enabled": false,
+    "format": "prometheus",
+    "output": "metrics.prom"
+  }
+}
+
