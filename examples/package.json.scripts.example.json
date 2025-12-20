@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "quality:check": "software-entropy .",
+    "quality:check:incremental": "software-entropy . --incremental",
+    "quality:check:ci": "software-entropy . --ci",
+    "quality:baseline": "software-entropy . --save-baseline .code-quality-baseline.json",
+    "quality:compare": "software-entropy . --baseline .code-quality-baseline.json",
+    "quality:check:script": "./scripts/quality-check.sh",
+    "quality:check:incremental:script": "./scripts/quality-check-incremental.sh",
+    "quality:baseline:script": "./scripts/quality-baseline.sh"
+  }
+}

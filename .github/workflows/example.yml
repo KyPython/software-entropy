@@ -1,0 +1,68 @@
+name: Software Entropy CI Example
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  code-quality:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build project
+        run: npm run build
+      
+      - name: Make scripts executable
+        run: chmod +x scripts/*.sh scripts/lib/*.sh || true
+      
+      - name: Run code quality check
+        run: |
+          CI=true npm run quality:check:ci || echo "Quality check completed with issues"
+        continue-on-error: true
+      
+      - name: Upload quality report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-report
+          path: quality-report.json
+          if-no-files-found: ignore
+
+  incremental-check:
+    name: Incremental Quality Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for git diff
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build project
+        run: npm run build
+      
+      - name: Make scripts executable
+        run: chmod +x scripts/*.sh scripts/lib/*.sh || true
+      
+      - name: Run incremental quality check
+        run: |
+          CI=true npm run quality:check:incremental || echo "Incremental check completed"
