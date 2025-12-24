@@ -145,6 +145,12 @@ This will:
 
 ### CI/CD Integration
 
+**GitHub Actions Example:**
+See [.github/workflows/example.yml](./.github/workflows/example.yml) for a complete workflow example that demonstrates:
+- Code quality checks in CI
+- Incremental scanning on pull requests
+- Quality report artifact uploads
+
 #### GitHub Actions
 
 Add to your workflow:
@@ -195,6 +201,9 @@ The `--ci` flag enables:
 ### NPM Scripts
 
 Add these to your `package.json`:
+
+**Quick Setup:**
+Copy the scripts from [examples/package.json.scripts.example.json](./examples/package.json.scripts.example.json) to your `package.json`.
 
 ```json
 {
