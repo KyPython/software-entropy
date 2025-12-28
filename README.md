@@ -414,13 +414,11 @@ software-entropy/
 └── tests/                  # Test files
 ```
 
-## Competitive Positioning
+## Documentation
 
-Software Entropy addresses the core pain points in static code analysis: **alert fatigue, lack of prioritization, and overwhelming noise**. 
-
-See [COMPETITIVE_ANALYSIS.md](./docs/COMPETITIVE_ANALYSIS.md) for a detailed comparison with SonarQube, Semgrep, Snyk, and other static analysis tools.
-
-**Key Differentiator**: While SonarQube shows "50,000 issues," Software Entropy shows "10 hotspots to fix first"—prioritizing actionable insights over comprehensive coverage.
+- **[Positioning & Strategy](./docs/POSITIONING.md)**: Market positioning, competitive differentiation, strategic recommendations
+- **[Architecture](./docs/ARCHITECTURE.md)**: System design, components, extension points, data flow
+- **[Contributing](./CONTRIBUTING.md)**: How to contribute, development workflow, priority areas
 
 ## License
 

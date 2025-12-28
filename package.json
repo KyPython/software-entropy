@@ -46,7 +46,13 @@
   "dependencies": {
     "commander": "^11.1.0",
     "chalk": "^4.1.2",
-    "glob": "^10.3.10"
+    "glob": "^10.3.10",
+    "typescript": "^5.3.3",
+    "@typescript-eslint/parser": "^7.18.0",
+    "@typescript-eslint/typescript-estree": "^7.18.0",
+    "esprima": "^4.0.1",
+    "acorn": "^8.11.3",
+    "jscodeshift": "^0.15.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",
