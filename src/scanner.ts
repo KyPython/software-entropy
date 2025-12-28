@@ -85,12 +85,20 @@ export class Scanner {
     // Detect language
     const language = this.detectLanguage(filePath);
     
-    // Parse AST if TypeScript/JavaScript
+    // Parse AST based on language
     let ast: any = undefined;
     if (language === 'typescript' || language === 'javascript') {
       try {
         const { parseTypeScript } = await import('./parsers/ast');
         const parsed = parseTypeScript(filePath, content);
+        ast = parsed.ast;
+      } catch {
+        // AST parsing failed, continue without it
+      }
+    } else if (language === 'python') {
+      try {
+        const { parsePython } = await import('./parsers/python-ast');
+        const parsed = parsePython(filePath, content);
         ast = parsed.ast;
       } catch {
         // AST parsing failed, continue without it

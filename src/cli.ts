@@ -6,6 +6,7 @@ import { createDefaultRules } from './rules';
 import { generateReport } from './report';
 import { JsonReporter } from './reporters/JsonReporter';
 import { PrettyReporter } from './reporters/PrettyReporter';
+import { HtmlReporter } from './reporters/HtmlReporter';
 import { loadConfig } from './config';
 import { loadBaseline, saveBaseline, compareWithBaseline } from './baseline';
 import { getChangedFiles, filterFilesByChanges } from './incremental';
@@ -26,6 +27,7 @@ program
   .option('-c, --config <file>', 'Path to config file')
   .option('-o, --output <file>', 'Output JSON report to file')
   .option('--json', 'Output only JSON (no pretty report)')
+  .option('--html', 'Generate HTML report')
   .option('--no-pretty', 'Disable pretty console output')
   .option('--max-function-lines <number>', 'Maximum lines per function')
   .option('--max-file-lines <number>', 'Maximum lines per file')
@@ -215,18 +217,26 @@ program
         }
       }
 
-      // Output JSON if requested
+      // Output JSON or HTML if requested
       if (options.output) {
-        const jsonReporter = new JsonReporter();
-        const reportToSave = baselineComparison
-          ? { ...report, baselineComparison }
-          : report;
-        const reportWithHotspots = hotspotAnalysis
-          ? { ...reportToSave, hotspots: { analysis: hotspotAnalysis, timeWindow: `${options.hotspotWindow} days ago`, topN: parseInt(options.topHotspots, 10) } }
-          : reportToSave;
-        jsonReporter.writeToFile(reportWithHotspots, path.resolve(options.output));
-        if (!isCI) {
-          console.log(`JSON report written to ${options.output}`);
+        if (options.html) {
+          const htmlReporter = new HtmlReporter();
+          htmlReporter.writeToFile(report, path.resolve(options.output));
+          if (!isCI) {
+            console.log(`HTML report written to ${options.output}`);
+          }
+        } else {
+          const jsonReporter = new JsonReporter();
+          const reportToSave = baselineComparison
+            ? { ...report, baselineComparison }
+            : report;
+          const reportWithHotspots = hotspotAnalysis
+            ? { ...reportToSave, hotspots: { analysis: hotspotAnalysis, timeWindow: `${options.hotspotWindow} days ago`, topN: parseInt(options.topHotspots, 10) } }
+            : reportToSave;
+          jsonReporter.writeToFile(reportWithHotspots, path.resolve(options.output));
+          if (!isCI) {
+            console.log(`JSON report written to ${options.output}`);
+          }
         }
       }
 
