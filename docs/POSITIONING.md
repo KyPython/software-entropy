@@ -85,6 +85,17 @@ Software Entropy works best as part of a **layered security approach**:
 
 This approach provides prioritized code quality insights, dependency security, automated remediation, and deep security analysis.
 
+### DevOps Productivity Suite Integration
+
+Software Entropy is part of a comprehensive **DevOps Productivity Suite** that includes:
+- **Code Generation Tools**: Automated code scaffolding
+- **Git Workflow Tools**: Branching strategies, workflow automation
+- **Testing Automation**: Test execution and coverage
+- **Deployment Automation**: CI/CD pipelines
+- **Software Entropy**: Code quality and security analysis (this tool)
+
+See [Suite Integration Documentation](./SUITE_INTEGRATION.md) for details on how these tools work together.
+
 ## Market Trends Alignment
 
 ### AI-Powered Analysis
