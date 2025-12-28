@@ -14,9 +14,11 @@ Instead of overwhelming you with thousands of issues, Software Entropy shows you
 
 - 🔍 **Pluggable Rule System**: Easy to extend with custom rules
 - 📊 **Multiple Output Formats**: JSON and pretty console output
-- 🎯 **Common Code Smells**: Detects long functions, large files, TODO/FIXME density
+- 🎯 **Comprehensive Rules**: 9 code quality + 3 security rules (and growing)
 - 🧪 **Well Tested**: Comprehensive Jest test suite
-- ⚡ **Fast**: Efficient scanning with configurable file patterns
+- ⚡ **Fast**: Parallel processing and incremental scanning
+- 🔒 **Security Rules**: SQL injection, XSS, hardcoded secrets detection
+- 🌳 **AST Support**: TypeScript/JavaScript AST parsing for deeper analysis
 - ⚙️ **Config File Support**: Project-specific configuration via `.code-quality-config.json`
 - 🔄 **Incremental Scanning**: Only scan changed files for faster feedback
 - 📈 **Baseline Comparison**: Compare against previous scans to track improvements
