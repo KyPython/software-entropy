@@ -17,6 +17,7 @@ A code-smell detection CLI tool that scans code repositories for common issues l
 - 📈 **Baseline Comparison**: Compare against previous scans to track improvements
 - 🤖 **CI/CD Integration**: GitHub Actions annotations and proper exit codes
 - 📉 **Trend Analysis**: Track code quality over time
+- 🔥 **Hotspot Detection**: Identifies files that are both complex AND frequently changed (the intersection of complexity × churn)
 
 ## Installation
 
@@ -129,6 +130,27 @@ Compare against baseline:
 ```bash
 software-entropy . --baseline .code-quality-baseline.json
 ```
+
+### Hotspot Analysis
+
+**The key differentiator from SonarQube**: Instead of flagging 50,000 issues, Software Entropy identifies hotspots—files that are both complex AND frequently changed.
+
+```bash
+software-entropy . --hotspots
+```
+
+This analyzes:
+- **Complexity**: Based on lines, functions, classes, and code smells
+- **Churn**: How often files are modified (from git history)
+- **Hotspot Score**: Complexity × Churn (multiplicative, not additive)
+
+**Why this matters:**
+- SonarQube: "You have 50,000 bad lines of code" → Alert fatigue, ignored
+- Software Entropy: "Fix these 10 hotspots first" → Actionable, prioritized
+
+Options:
+- `--hotspot-window <days>`: Time window for churn analysis (default: 30 days)
+- `--top-hotspots <number>`: Number of top hotspots to show (default: 10)
 
 ### CI/CD Integration
 
@@ -251,6 +273,12 @@ software-entropy . --ci --fail-on-high
 
 # Compare with baseline
 software-entropy . --baseline .code-quality-baseline.json
+
+# Hotspot analysis (prioritize complex files that change often)
+software-entropy . --hotspots
+
+# Hotspot analysis with custom time window
+software-entropy . --hotspots --hotspot-window 60 --top-hotspots 20
 ```
 
 ## Rules

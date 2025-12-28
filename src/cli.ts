@@ -10,6 +10,8 @@ import { loadConfig } from './config';
 import { loadBaseline, saveBaseline, compareWithBaseline } from './baseline';
 import { getChangedFiles, filterFilesByChanges } from './incremental';
 import { generateCIAnnotations, outputGitHubAnnotations, shouldFailBuild } from './ci-annotations';
+import { calculateChurn, identifyHotspots } from './hotspot';
+import { HotspotReporter } from './reporters/HotspotReporter';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -36,6 +38,9 @@ program
   .option('--ci', 'Enable CI mode (annotations, proper exit codes)')
   .option('--fail-on-high', 'Exit with error code if high severity smells found')
   .option('--fail-on-medium', 'Exit with error code if medium severity smells found')
+  .option('--hotspots', 'Analyze hotspots (complexity × churn) - prioritizes files that are both complex AND frequently changed')
+  .option('--hotspot-window <days>', 'Time window for churn analysis in days (default: 30)', '30')
+  .option('--top-hotspots <number>', 'Number of top hotspots to show (default: 10)', '10')
   .action(async (directory: string, options) => {
     try {
       // Load config
@@ -172,13 +177,31 @@ program
         console.log(`Baseline saved to ${options.saveBaseline}`);
       }
 
+      // Hotspot Analysis
+      let hotspotAnalysis = null;
+      if (options.hotspots) {
+        console.log('\nAnalyzing hotspots (complexity × churn)...');
+        const timeWindow = `${options.hotspotWindow} days ago`;
+        const allFiles = results.map(r => r.file);
+        const churnData = calculateChurn(allFiles, timeWindow);
+        hotspotAnalysis = identifyHotspots(results, churnData, parseInt(options.topHotspots, 10));
+        
+        if (!options.json && options.pretty !== false && !isCI) {
+          const hotspotReporter = new HotspotReporter();
+          console.log('\n' + hotspotReporter.generate(hotspotAnalysis, targetDir));
+        }
+      }
+
       // Output JSON if requested
       if (options.output) {
         const jsonReporter = new JsonReporter();
         const reportToSave = baselineComparison
           ? { ...report, baselineComparison }
           : report;
-        jsonReporter.writeToFile(reportToSave, path.resolve(options.output));
+        const reportWithHotspots = hotspotAnalysis
+          ? { ...reportToSave, hotspots: { analysis: hotspotAnalysis, timeWindow: `${options.hotspotWindow} days ago`, topN: parseInt(options.topHotspots, 10) } }
+          : reportToSave;
+        jsonReporter.writeToFile(reportWithHotspots, path.resolve(options.output));
         if (!isCI) {
           console.log(`JSON report written to ${options.output}`);
         }
