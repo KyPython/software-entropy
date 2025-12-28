@@ -214,6 +214,7 @@ program
       }
 
       // Output pretty report unless disabled (show after hotspots if enabled)
+      const enableHotspots = options.hotspots !== false && !options.noHotspots;
       if (!options.json && options.pretty !== false && !isCI) {
         // Only show detailed report if hotspots are disabled
         // Otherwise hotspots are the primary output
