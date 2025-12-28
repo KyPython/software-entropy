@@ -14,6 +14,7 @@ import { calculateChurn, identifyHotspots } from './hotspot';
 import { HotspotReporter } from './reporters/HotspotReporter';
 import * as path from 'path';
 import * as fs from 'fs';
+import { execSync } from 'child_process';
 
 const program = new Command();
 
