@@ -1,10 +1,12 @@
 # Software Entropy Roadmap
 
+> **Note**: This roadmap is a living document. Priorities may shift based on community feedback and market needs. See [CONTRIBUTING.md](./CONTRIBUTING.md) for how to contribute.
+
 ## Vision
 
 Become the **hotspot-first static analysis tool** that prioritizes actionable fixes over comprehensive coverage, addressing the #1 complaint about static analysis: alert fatigue.
 
-## Current State (v1.0.0 - MVP)
+## Current State (v1.0.0)
 
 ✅ Hotspot detection (complexity × churn)  
 ✅ Basic code quality rules (3 rules)  
@@ -184,21 +186,25 @@ Become the **hotspot-first static analysis tool** that prioritizes actionable fi
 - Web dashboard adoption
 - 50,000+ GitHub stars
 
-## Community Contributions
+## Contributing
 
-We welcome contributions! Priority areas:
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for how to contribute. Priority areas:
 1. Security rules (OWASP, CWE)
 2. Language-specific analyzers
 3. Package manager integrations
 4. Performance optimizations
 5. Documentation and examples
 
-## Competitive Positioning
+## Evolution Path
 
 **Today**: Hotspot-first code quality tool  
-**Phase 1-2**: Hotspot-first code quality + security tool  
-**Phase 3-4**: Comprehensive static analysis with hotspot prioritization  
-**Phase 5-6**: Enterprise-ready static analysis platform
+**Near-term**: Hotspot-first code quality + security tool  
+**Mid-term**: Comprehensive static analysis with hotspot prioritization  
+**Long-term**: Enterprise-ready static analysis platform
 
 **Goal**: Become the #1 choice for teams prioritizing actionable fixes over comprehensive coverage.
+
+---
+
+*This roadmap is updated regularly based on community feedback and market needs. Last updated: 2025*
 
