@@ -13,12 +13,14 @@ Instead of overwhelming you with thousands of issues, Software Entropy shows you
 ## Features
 
 - 🔍 **Pluggable Rule System**: Easy to extend with custom rules
-- 📊 **Multiple Output Formats**: JSON and pretty console output
-- 🎯 **Comprehensive Rules**: 9 code quality + 3 security rules (and growing)
+- 📊 **Multiple Output Formats**: JSON, HTML, Prometheus metrics, and pretty console output
+- 🎯 **Comprehensive Rules**: 11 code quality + 7 security rules (18 total)
 - 🧪 **Well Tested**: Comprehensive Jest test suite
-- ⚡ **Fast**: Parallel processing and incremental scanning
-- 🔒 **Security Rules**: SQL injection, XSS, hardcoded secrets detection
-- 🌳 **AST Support**: TypeScript/JavaScript AST parsing for deeper analysis
+- ⚡ **Fast**: Parallel processing, incremental scanning, and AST caching
+- 🔒 **Security Rules**: OWASP Top 10 coverage (SQL injection, XSS, CSRF, authentication flaws, path traversal, command injection, hardcoded secrets)
+- 🌳 **AST Support**: TypeScript/JavaScript and Python AST parsing for deeper analysis
+- 📦 **Dependency Scanning**: CVE database integration via OSV API
+- 📈 **Metrics Export**: Prometheus format for observability integration
 - ⚙️ **Config File Support**: Project-specific configuration via `.code-quality-config.json`
 - 🔄 **Incremental Scanning**: Only scan changed files for faster feedback
 - 📈 **Baseline Comparison**: Compare against previous scans to track improvements
@@ -327,6 +329,14 @@ Detects potentially unreachable code after return/throw/break/continue.
 #### Nested Conditional Rule
 Detects deeply nested conditionals that reduce readability.
 - **Default threshold**: 3 levels deep
+
+#### Cognitive Complexity Rule
+Detects functions with high cognitive complexity (harder to understand than cyclomatic complexity).
+- **Default threshold**: 15
+
+#### Long Parameter List Rule
+Detects functions with too many parameters.
+- **Default threshold**: 5 parameters
 
 ### Security Rules
 
