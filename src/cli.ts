@@ -177,18 +177,34 @@ program
         console.log(`Baseline saved to ${options.saveBaseline}`);
       }
 
-      // Hotspot Analysis
+      // Hotspot Analysis (enabled by default - this is the core value proposition)
       let hotspotAnalysis = null;
-      if (options.hotspots) {
-        console.log('\nAnalyzing hotspots (complexity × churn)...');
-        const timeWindow = `${options.hotspotWindow} days ago`;
-        const allFiles = results.map(r => r.file);
-        const churnData = calculateChurn(allFiles, timeWindow);
-        hotspotAnalysis = identifyHotspots(results, churnData, parseInt(options.topHotspots, 10));
-        
-        if (!options.json && options.pretty !== false && !isCI) {
-          const hotspotReporter = new HotspotReporter();
-          console.log('\n' + hotspotReporter.generate(hotspotAnalysis, targetDir));
+      const enableHotspots = options.hotspots !== false && !options.noHotspots;
+      
+      if (enableHotspots && results.length > 0) {
+        // Check if git is available for churn analysis
+        let hasGit = false;
+        try {
+          execSync('git rev-parse --git-dir', { stdio: 'ignore' });
+          hasGit = true;
+        } catch {
+          if (!isCI) {
+            console.log('\n⚠️  Warning: Not a git repository. Hotspot analysis requires git history.');
+            console.log('   Run with --no-hotspots to see traditional report, or initialize git repo.\n');
+          }
+        }
+
+        if (hasGit) {
+          console.log('\n🔥 Analyzing hotspots (complexity × churn)...');
+          const timeWindow = `${options.hotspotWindow} days ago`;
+          const allFiles = results.map(r => r.file);
+          const churnData = calculateChurn(allFiles, timeWindow);
+          hotspotAnalysis = identifyHotspots(results, churnData, parseInt(options.topHotspots, 10));
+          
+          if (!options.json && options.pretty !== false && !isCI) {
+            const hotspotReporter = new HotspotReporter();
+            console.log('\n' + hotspotReporter.generate(hotspotAnalysis, targetDir));
+          }
         }
       }
 
