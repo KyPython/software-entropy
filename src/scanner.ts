@@ -27,15 +27,22 @@ export class Scanner {
     const results: ScanResult[] = [];
     const files = specificFiles || await this.findFiles(directory);
 
-    for (const file of files) {
-      try {
-        const result = await this.scanFile(file);
-        if (result) {
-          results.push(result);
-        }
-      } catch (error) {
-        console.error(`Error scanning ${file}:`, error);
-      }
+    // Process files in parallel batches for better performance
+    const batchSize = 10;
+    for (let i = 0; i < files.length; i += batchSize) {
+      const batch = files.slice(i, i + batchSize);
+      const batchResults = await Promise.all(
+        batch.map(async (file) => {
+          try {
+            return await this.scanFile(file);
+          } catch (error) {
+            console.error(`Error scanning ${file}:`, error);
+            return null;
+          }
+        })
+      );
+      
+      results.push(...batchResults.filter((r): r is ScanResult => r !== null));
     }
 
     return results;
@@ -75,10 +82,27 @@ export class Scanner {
     const content = fs.readFileSync(filePath, 'utf-8');
     const lines = content.split('\n');
     
+    // Detect language
+    const language = this.detectLanguage(filePath);
+    
+    // Parse AST if TypeScript/JavaScript
+    let ast: any = undefined;
+    if (language === 'typescript' || language === 'javascript') {
+      try {
+        const { parseTypeScript } = await import('./parsers/ast');
+        const parsed = parseTypeScript(filePath, content);
+        ast = parsed.ast;
+      } catch {
+        // AST parsing failed, continue without it
+      }
+    }
+    
     const context: RuleContext = {
       file: filePath,
       content,
-      lines
+      lines,
+      ast,
+      language
     };
 
     const allSmells = this.rules.flatMap(rule => rule.run(context));
@@ -131,6 +155,18 @@ export class Scanner {
     }
 
     return count;
+  }
+
+  private detectLanguage(filePath: string): 'typescript' | 'javascript' | 'python' | 'java' | 'go' | 'unknown' {
+    const ext = path.extname(filePath).toLowerCase();
+    
+    if (ext === '.ts' || ext === '.tsx') return 'typescript';
+    if (ext === '.js' || ext === '.jsx' || ext === '.mjs' || ext === '.cjs') return 'javascript';
+    if (ext === '.py') return 'python';
+    if (ext === '.java') return 'java';
+    if (ext === '.go') return 'go';
+    
+    return 'unknown';
   }
 }
 

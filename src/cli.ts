@@ -63,50 +63,56 @@ program
       // Create rules with config or CLI overrides
       const rules = createDefaultRules();
       
-      // Apply config to rules
-      const longFunctionRule = rules.find(r => r.name === 'long-function');
-      const largeFileRule = rules.find(r => r.name === 'large-file');
-      const todoRule = rules.find(r => r.name === 'todo-fixme-density');
+      // Apply config to all rules
+      for (const rule of rules) {
+        const ruleConfig = config.rules?.[rule.name as keyof typeof config.rules];
+        if (ruleConfig && 'enabled' in ruleConfig) {
+          rule.enabled = ruleConfig.enabled ?? true;
+        }
 
-      if (longFunctionRule) {
-        const ruleConfig = config.rules?.['long-function'];
-        if (ruleConfig) {
-          longFunctionRule.enabled = ruleConfig.enabled ?? true;
-          if ('maxLines' in longFunctionRule && ruleConfig.maxLines !== undefined) {
-            (longFunctionRule as any).maxLines = ruleConfig.maxLines;
+        // Apply rule-specific config
+        if (rule.name === 'long-function' && 'maxLines' in rule) {
+          const cfg = ruleConfig as { maxLines?: number } | undefined;
+          if (cfg?.maxLines !== undefined) {
+            (rule as any).maxLines = cfg.maxLines;
           }
-        }
-        // CLI override
-        if (options.maxFunctionLines) {
-          (longFunctionRule as any).maxLines = parseInt(options.maxFunctionLines, 10);
-        }
-      }
-
-      if (largeFileRule) {
-        const ruleConfig = config.rules?.['large-file'];
-        if (ruleConfig) {
-          largeFileRule.enabled = ruleConfig.enabled ?? true;
-          if ('maxLines' in largeFileRule && ruleConfig.maxLines !== undefined) {
-            (largeFileRule as any).maxLines = ruleConfig.maxLines;
+          if (options.maxFunctionLines) {
+            (rule as any).maxLines = parseInt(options.maxFunctionLines, 10);
           }
-        }
-        // CLI override
-        if (options.maxFileLines) {
-          (largeFileRule as any).maxLines = parseInt(options.maxFileLines, 10);
-        }
-      }
-
-      if (todoRule) {
-        const ruleConfig = config.rules?.['todo-fixme-density'];
-        if (ruleConfig) {
-          todoRule.enabled = ruleConfig.enabled ?? true;
-          if ('maxDensity' in todoRule && ruleConfig.maxDensity !== undefined) {
-            (todoRule as any).maxDensity = ruleConfig.maxDensity;
+        } else if (rule.name === 'large-file' && 'maxLines' in rule) {
+          const cfg = ruleConfig as { maxLines?: number } | undefined;
+          if (cfg?.maxLines !== undefined) {
+            (rule as any).maxLines = cfg.maxLines;
           }
-        }
-        // CLI override
-        if (options.maxTodoDensity) {
-          (todoRule as any).maxDensity = parseFloat(options.maxTodoDensity);
+          if (options.maxFileLines) {
+            (rule as any).maxLines = parseInt(options.maxFileLines, 10);
+          }
+        } else if (rule.name === 'todo-fixme-density' && 'maxDensity' in rule) {
+          const cfg = ruleConfig as { maxDensity?: number } | undefined;
+          if (cfg?.maxDensity !== undefined) {
+            (rule as any).maxDensity = cfg.maxDensity;
+          }
+          if (options.maxTodoDensity) {
+            (rule as any).maxDensity = parseFloat(options.maxTodoDensity);
+          }
+        } else if (rule.name === 'duplicate-code' && 'minLines' in rule) {
+          const cfg = ruleConfig as { minLines?: number; similarityThreshold?: number } | undefined;
+          if (cfg?.minLines !== undefined) {
+            (rule as any).minLines = cfg.minLines;
+          }
+          if (cfg?.similarityThreshold !== undefined) {
+            (rule as any).similarityThreshold = cfg.similarityThreshold;
+          }
+        } else if (rule.name === 'cyclomatic-complexity' && 'maxComplexity' in rule) {
+          const cfg = ruleConfig as { maxComplexity?: number } | undefined;
+          if (cfg?.maxComplexity !== undefined) {
+            (rule as any).maxComplexity = cfg.maxComplexity;
+          }
+        } else if (rule.name === 'nested-conditional' && 'maxDepth' in rule) {
+          const cfg = ruleConfig as { maxDepth?: number } | undefined;
+          if (cfg?.maxDepth !== undefined) {
+            (rule as any).maxDepth = cfg.maxDepth;
+          }
         }
       }
 

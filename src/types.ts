@@ -33,7 +33,8 @@ export interface RuleContext {
   file: string;
   content: string;
   lines: string[];
-  ast?: any;
+  ast?: any; // ASTNode from parsers/ast.ts
+  language?: 'typescript' | 'javascript' | 'python' | 'java' | 'go' | 'unknown';
 }
 
 export interface Rule {

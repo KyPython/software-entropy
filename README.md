@@ -292,23 +292,58 @@ software-entropy . --no-hotspots
 
 ## Rules
 
-### Long Function Rule
+### Code Quality Rules
 
+#### Long Function Rule
 Detects functions that exceed a specified line count threshold.
+- **Default threshold**: 50 lines
 
-**Default threshold**: 50 lines
-
-### Large File Rule
-
+#### Large File Rule
 Detects files that exceed a specified line count threshold.
+- **Default threshold**: 500 lines
 
-**Default threshold**: 500 lines
-
-### TODO/FIXME Density Rule
-
+#### TODO/FIXME Density Rule
 Detects files with high density of TODO, FIXME, XXX, HACK, or NOTE comments.
+- **Default threshold**: 5% (5 per 100 lines)
 
-**Default threshold**: 5% (5 per 100 lines)
+#### Duplicate Code Rule
+Detects duplicate code blocks within a file.
+- **Default**: 5+ lines with 80% similarity
+
+#### Cyclomatic Complexity Rule
+Detects functions with high cyclomatic complexity (decision points).
+- **Default threshold**: 10
+
+#### Magic Number Rule
+Detects magic numbers that should be named constants.
+- **Severity**: Low
+
+#### Dead Code Rule
+Detects potentially unreachable code after return/throw/break/continue.
+- **Severity**: Medium
+
+#### Nested Conditional Rule
+Detects deeply nested conditionals that reduce readability.
+- **Default threshold**: 3 levels deep
+
+### Security Rules
+
+#### Hardcoded Secret Rule
+Detects hardcoded API keys, passwords, tokens, and secrets.
+- **Severity**: High
+- **CWE**: CWE-798
+
+#### SQL Injection Rule
+Detects potential SQL injection vulnerabilities from string concatenation.
+- **Severity**: High
+- **CWE**: CWE-89
+- **OWASP**: A03:2021 – Injection
+
+#### XSS Rule
+Detects potential Cross-Site Scripting (XSS) vulnerabilities.
+- **Severity**: High
+- **CWE**: CWE-79
+- **OWASP**: A03:2021 – Injection
 
 ## Creating Custom Rules
 

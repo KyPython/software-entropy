@@ -11,6 +11,34 @@
     "todo-fixme-density": {
       "enabled": true,
       "maxDensity": 5
+    },
+    "duplicate-code": {
+      "enabled": true,
+      "minLines": 5,
+      "similarityThreshold": 0.8
+    },
+    "cyclomatic-complexity": {
+      "enabled": true,
+      "maxComplexity": 10
+    },
+    "magic-number": {
+      "enabled": true
+    },
+    "dead-code": {
+      "enabled": true
+    },
+    "nested-conditional": {
+      "enabled": true,
+      "maxDepth": 3
+    },
+    "hardcoded-secret": {
+      "enabled": true
+    },
+    "sql-injection": {
+      "enabled": true
+    },
+    "xss": {
+      "enabled": true
     }
   },
   "include": [
