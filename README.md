@@ -3,7 +3,12 @@
 [![CI](https://github.com/KyPython/software-entropy/actions/workflows/ci.yml/badge.svg)](https://github.com/KyPython/software-entropy/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/KyPython/software-entropy/actions/workflows/codeql.yml/badge.svg)](https://github.com/KyPython/software-entropy/actions/workflows/codeql.yml)
 
-A code-smell detection CLI tool that **prioritizes actionable fixes** by identifying hotspots—files that are both complex AND frequently changed. Instead of overwhelming you with 50,000 issues, it shows you the 10 files that matter most.
+A code-smell detection CLI tool that **prioritizes actionable fixes** by identifying hotspots—files that are both complex AND frequently changed. 
+
+**The SonarQube Problem**: "It spat out 50,000 issues... it was just noise."  
+**Software Entropy Solution**: "Fix these 10 hotspots first."
+
+Instead of overwhelming you with thousands of issues, Software Entropy shows you the files that matter most—the intersection of complexity and change frequency.
 
 ## Features
 
@@ -408,6 +413,14 @@ software-entropy/
 ├── dist/                   # Compiled output
 └── tests/                  # Test files
 ```
+
+## Competitive Positioning
+
+Software Entropy addresses the core pain points in static code analysis: **alert fatigue, lack of prioritization, and overwhelming noise**. 
+
+See [COMPETITIVE_ANALYSIS.md](./docs/COMPETITIVE_ANALYSIS.md) for a detailed comparison with SonarQube, Semgrep, Snyk, and other static analysis tools.
+
+**Key Differentiator**: While SonarQube shows "50,000 issues," Software Entropy shows "10 hotspots to fix first"—prioritizing actionable insights over comprehensive coverage.
 
 ## License
 
