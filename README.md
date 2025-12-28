@@ -3,7 +3,7 @@
 [![CI](https://github.com/KyPython/software-entropy/actions/workflows/ci.yml/badge.svg)](https://github.com/KyPython/software-entropy/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/KyPython/software-entropy/actions/workflows/codeql.yml/badge.svg)](https://github.com/KyPython/software-entropy/actions/workflows/codeql.yml)
 
-A code-smell detection CLI tool that scans code repositories for common issues like long functions, large files, and TODO/FIXME density.
+A code-smell detection CLI tool that **prioritizes actionable fixes** by identifying hotspots—files that are both complex AND frequently changed. Instead of overwhelming you with 50,000 issues, it shows you the 10 files that matter most.
 
 ## Features
 
@@ -131,15 +131,15 @@ Compare against baseline:
 software-entropy . --baseline .code-quality-baseline.json
 ```
 
-### Hotspot Analysis
+### Hotspot Analysis (Default)
 
-**The key differentiator from SonarQube**: Instead of flagging 50,000 issues, Software Entropy identifies hotspots—files that are both complex AND frequently changed.
+**The key differentiator from SonarQube**: Software Entropy runs hotspot analysis by default, identifying files that are both complex AND frequently changed—prioritizing actionable fixes over noise.
 
 ```bash
-software-entropy . --hotspots
+software-entropy .
 ```
 
-This analyzes:
+This automatically analyzes:
 - **Complexity**: Based on lines, functions, classes, and code smells
 - **Churn**: How often files are modified (from git history)
 - **Hotspot Score**: Complexity × Churn (multiplicative, not additive)
@@ -148,7 +148,8 @@ This analyzes:
 - SonarQube: "You have 50,000 bad lines of code" → Alert fatigue, ignored
 - Software Entropy: "Fix these 10 hotspots first" → Actionable, prioritized
 
-Options:
+**Options:**
+- `--no-hotspots`: Disable hotspot analysis (if you want traditional full report)
 - `--hotspot-window <days>`: Time window for churn analysis (default: 30 days)
 - `--top-hotspots <number>`: Number of top hotspots to show (default: 10)
 
@@ -274,11 +275,14 @@ software-entropy . --ci --fail-on-high
 # Compare with baseline
 software-entropy . --baseline .code-quality-baseline.json
 
-# Hotspot analysis (prioritize complex files that change often)
-software-entropy . --hotspots
+# Hotspot analysis (enabled by default - this is the core feature)
+software-entropy .
 
-# Hotspot analysis with custom time window
-software-entropy . --hotspots --hotspot-window 60 --top-hotspots 20
+# Customize hotspot analysis
+software-entropy . --hotspot-window 60 --top-hotspots 20
+
+# Disable hotspots to see full traditional report
+software-entropy . --no-hotspots
 ```
 
 ## Rules

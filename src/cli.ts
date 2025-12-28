@@ -38,7 +38,7 @@ program
   .option('--ci', 'Enable CI mode (annotations, proper exit codes)')
   .option('--fail-on-high', 'Exit with error code if high severity smells found')
   .option('--fail-on-medium', 'Exit with error code if medium severity smells found')
-  .option('--hotspots', 'Analyze hotspots (complexity × churn) - prioritizes files that are both complex AND frequently changed')
+  .option('--no-hotspots', 'Disable hotspot analysis (enabled by default)')
   .option('--hotspot-window <days>', 'Time window for churn analysis in days (default: 30)', '30')
   .option('--top-hotspots <number>', 'Number of top hotspots to show (default: 10)', '10')
   .action(async (directory: string, options) => {
@@ -213,10 +213,14 @@ program
         outputGitHubAnnotations(annotations);
       }
 
-      // Output pretty report unless disabled
+      // Output pretty report unless disabled (show after hotspots if enabled)
       if (!options.json && options.pretty !== false && !isCI) {
-        const prettyReporter = new PrettyReporter();
-        console.log(prettyReporter.generate(report));
+        // Only show detailed report if hotspots are disabled
+        // Otherwise hotspots are the primary output
+        if (!enableHotspots) {
+          const prettyReporter = new PrettyReporter();
+          console.log(prettyReporter.generate(report));
+        }
       } else if (options.json) {
         const jsonReporter = new JsonReporter();
         const reportToOutput = baselineComparison
