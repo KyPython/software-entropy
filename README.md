@@ -465,7 +465,9 @@ software-entropy/
 
 - **[Positioning & Strategy](./docs/POSITIONING.md)**: Market positioning, competitive differentiation, strategic recommendations
 - **[Architecture](./docs/ARCHITECTURE.md)**: System design, components, extension points, data flow
+- **[Suite Integration](./docs/SUITE_INTEGRATION.md)**: How Software Entropy fits into the DevOps Productivity Suite
 - **[Contributing](./CONTRIBUTING.md)**: How to contribute, development workflow, priority areas
+- **[Roadmap](./ROADMAP.md)**: Development roadmap and future plans
 
 ## License
 
